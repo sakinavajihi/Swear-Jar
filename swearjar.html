@@ -1,1 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Virtual Swear Jar 💸</title>
 
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #ffd6e8, #ffeef5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.jar-box {
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  width: 360px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+h1 { color: #ff4d88; }
+
+.stats {
+  margin: 15px 0;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+button {
+  background: #ff4d88;
+  color: white;
+  border: none;
+  padding: 12px;
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+.pay { background: #4CAF50; }
+.reset { background: #555; }
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.message {
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* Jar Animation */
+.jar {
+  width: 120px;
+  height: 160px;
+  border: 4px solid #ff4d88;
+  border-radius: 10px;
+  margin: 15px auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.fill {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 0%;
+  background: rgba(255, 77, 136, 0.7);
+  transition: height 0.5s ease;
+}
+
+/* Payment History */
+.history {
+  text-align: left;
+  margin-top: 10px;
+  max-height: 120px;
+  overflow-y: auto;
+  font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="jar-box">
+<h1>💖 Swear Jar 💖</h1>
+<p>₹100 per swear 😈</p>
+
+<div class="jar">
+  <div class="fill" id="fill"></div>
+</div>
+
+<div class="stats">
+🤬 Swears: <span id="swears">0</span><br>
+💸 Total Fine: ₹<span id="totalFine">0</span><br>
+💰 Paid: ₹<span id="paid">0</span><br>
+⏳ Remaining: ₹<span id="remaining">0</span>
+</div>
+
+<button onclick="addSwear()">I Swore 😔 (+₹100)</button>
+
+<input type="number" id="payAmount" placeholder="Enter amount paid (₹)">
+<button class="pay" onclick="makePayment()">Record Payment 💸</button>
+
+<button class="reset" onclick="resetJar()">Clear Jar 🫶</button>
+
+<div class="message" id="message"></div>
+
+<h3>📜 Payment History</h3>
+<div class="history" id="history"></div>
+</div>
+
+<script>
+const amountPerSwear = 100;
+
+let swears = Number(localStorage.getItem("swears")) || 0;
+let totalFine = Number(localStorage.getItem("totalFine")) || 0;
+let paid = Number(localStorage.getItem("paid")) || 0;
+let history = JSON.parse(localStorage.getItem("history")) || [];
+
+const messages = [
+  "That word cost you ₹100 😌",
+  "Language has consequences 😈",
+  "Swearing isn't free 😂",
+  "₹100 vanished 💸",
+  "Mind your mouth 😏"
+];
+
+function saveData() {
+  localStorage.setItem("swears", swears);
+  localStorage.setItem("totalFine", totalFine);
+  localStorage.setItem("paid", paid);
+  localStorage.setItem("history", JSON.stringify(history));
+}
+
+function updateDisplay() {
+  document.getElementById("swears").innerText = swears;
+  document.getElementById("totalFine").innerText = totalFine;
+  document.getElementById("paid").innerText = paid;
+  document.getElementById("remaining").innerText = totalFine - paid;
+
+  // Jar fill (10% per swear)
+  let fillPercent = Math.min(swears * 10, 100);
+  document.getElementById("fill").style.height = fillPercent + "%";
+
+  // History
+  document.getElementById("history").innerHTML =
+    history.map(h => `<div>₹${h.amount} — ${h.date}</div>`).join("");
+}
+
+function addSwear() {
+  swears++;
+  totalFine += amountPerSwear;
+  saveData();
+  updateDisplay();
+  document.getElementById("message").innerText =
+    messages[Math.floor(Math.random() * messages.length)];
+}
+
+function makePayment() {
+  let amount = Number(document.getElementById("payAmount").value);
+  if (amount > 0) {
+    paid += amount;
+    history.unshift({
+      amount: amount,
+      date: new Date().toLocaleString()
+    });
+    saveData();
+    updateDisplay();
+    document.getElementById("payAmount").value = "";
+    document.getElementById("message").innerText = "Payment saved 😇";
+  }
+}
+
+function resetJar() {
+  swears = 0;
+  totalFine = 0;
+  paid = 0;
+  history = [];
+  saveData();
+  updateDisplay();
+  document.getElementById("message").innerText = "Jar reset 😇";
+}
+
+updateDisplay();
+</script>
+
+</body>
+</html>
